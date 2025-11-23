@@ -4,13 +4,13 @@
 
 ## 目錄
 
-[1. 硬體設備與運算環境 (Hardware Environment)](##1.硬體設備與運算環境 (Hardware Environment))
-[2. 資料前處理 (Data Preprocessing)](##2.資料前處理 (Data Preprocessing))
-[3. 模型選擇與架構 (Model Architecture)](##3.模型選擇與架構 (Model Architecture))
-[4. 訓練策略與參數設定 (Training Strategy)](##4.訓練策略與參數設定 (Training Strategy))
-[5. 推論與後處理優化 (Inference & Post-processing)](##5.推論與後處理優化 (Inference & Post-processing))
-[6. 結論](##6.結論)
-[7. 斗內](https://ko-fi.com/arch1e0732)
+- [1. 硬體設備與運算環境 (Hardware Environment)](##1.硬體設備與運算環境 (Hardware Environment))
+- [2. 資料前處理 (Data Preprocessing)](##2.資料前處理 (Data Preprocessing))
+- [3. 模型選擇與架構 (Model Architecture)](##3.模型選擇與架構 (Model Architecture))
+- [4. 訓練策略與參數設定 (Training Strategy)](##4.訓練策略與參數設定 (Training Strategy))
+- [5. 推論與後處理優化 (Inference & Post-processing)](##5.推論與後處理優化 (Inference & Post-processing))
+- [6. 結論](##6.結論)
+- [7. 斗內](https://ko-fi.com/arch1e0732)
 
 ## 1. 硬體設備與運算環境 (Hardware Environment)
 
