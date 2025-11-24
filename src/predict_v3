@@ -1,0 +1,60 @@
+import os
+from ultralytics import YOLO
+
+
+model_path = "./runs/detect/aortic_run_L_200_epochs/weights/best.pt"
+
+print(f"🎉 import 200 Epochs model：{model_path}")
+
+if not os.path.exists(model_path):
+    print("⚠️ aaaaaa")
+    import glob
+    possible_dirs = glob.glob('./runs/detect/aortic_run*')
+    if possible_dirs:
+        latest_run = max(possible_dirs, key=os.path.getmtime)
+        model_path = f"{latest_run}/weights/best.pt"
+        print(f"✅ find model：{model_path}")
+    else:
+        raise FileNotFoundError("❌ cannot find any model")
+
+model = YOLO(model_path)
+
+submission_file = "submission_L_200_TTA.txt"
+base_dir = "./datasets"
+
+
+# 開啟檔案準備寫入
+with open(submission_file, 'w') as f:
+    results = model.predict(
+        source=f"{base_dir}/test/images",
+        imgsz=640,
+        device=0,    
+        
+        conf=0.001,   
+        iou=0.65,     
+        augment=True,
+        
+        verbose=False,
+        stream=True   
+    )
+    
+    count = 0
+    for result in results:
+        count += 1
+        if count % 1000 == 0:
+            print(f"fininshing {count} count")
+
+        filename = os.path.basename(result.path).replace(".png", "")
+        boxes = result.boxes
+        
+        if len(boxes) > 0:
+            for k in range(len(boxes)):
+                cls = int(boxes.cls[k].item())
+                conf = boxes.conf[k].item()
+                x1, y1, x2, y2 = boxes.xyxy[k].tolist()
+                
+                line = f"{filename} {cls} {conf:.4f} {int(x1)} {int(y1)} {int(x2)} {int(y2)}\n"
+                f.write(line)
+
+
+print(f"path on '{submission_file}'")
