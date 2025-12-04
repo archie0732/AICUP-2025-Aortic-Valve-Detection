@@ -26,6 +26,7 @@
 
 ## 目錄
 
+- [前言 關於程式碼 (About My Code)](#【前言】-關於程式碼-About-My-Code)
 - [1. 硬體設備與運算環境 (Hardware Environment)](#1-硬體設備與運算環境-hardware-environment)
 - [2. 資料前處理 (Data Preprocessing)](#2-資料前處理-data-preprocessing)
 - [3. 模型選擇與架構 (Model Architecture)](#3-模型選擇與架構-model-architecture)
@@ -35,6 +36,8 @@
 - [7. 贊助 (Donate)](#7-贊助-donate)
 
 ---
+## 【前言】 關於程式碼 About My Code
+
 
 ## 1. 硬體設備與運算環境 (Hardware Environment)
 
