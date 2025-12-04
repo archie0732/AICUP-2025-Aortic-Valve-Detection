@@ -8,7 +8,7 @@
 | :---: | :---: | :---: | :---: |
 | 0.961211 | **0.970346** | **20** | 23 |
 
-> **Highlight:** 本次競賽中，雖然 Pseudo-Labeling 策略在 Public Leaderboard 分數略有下降 (0.967 -> 0.961)，但在 Private Leaderboard 中展現了極強的泛化能力，最終以 **0.9703** 取得隊伍最佳成績。
+> **Highlight:** 本次競賽中，雖然 Pseudo-Labeling 策略在 Public Leaderboard 分數略有下降 (0.967 -> 0.961)，但在 Private Leaderboard 中展現了極強的泛化能力，最終突破 **0.9703** (剛開始定的目標)。
 
 ![](./meme.png)
 
