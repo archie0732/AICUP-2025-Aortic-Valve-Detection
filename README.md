@@ -112,7 +112,7 @@
 
 然後我最想說的是
 
-![](https://p3-pc-sign.douyinpic.com/tos-cn-i-0813c000-ce/oIwAaiGxoEANbD51ABENALOGiAeEeIf93AiJYk~noop.jpeg)
+![](https://p3-pc-sign.douyinpic.com/tos-cn-i-0813c000-ce/oIwAaiGxoEANbD51ABENALOGiAeEeIf93AiJYk~tplv-dy-aweme-images:q75.webp?biz_tag=aweme_images&from=327834062&lk3s=138a59ce&s=PackSourceEnum_SEARCH&sc=image&se=false&x-expires=1767420000&x-signature=M9dxF5VxSlPQ69%2Blvn3yw%2Bf2eRk%3D)
 
 ---
 
