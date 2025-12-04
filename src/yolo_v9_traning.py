@@ -3,7 +3,6 @@ from ultralytics import YOLO
 
 model = YOLO('yolov9e.pt') 
 
-# 2. 開始訓練
 results = model.train(
     data="./aortic_valve_full.yaml", 
     
