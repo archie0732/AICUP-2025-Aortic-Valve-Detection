@@ -10,16 +10,16 @@
 | :---: | :---: | :---: | :---: |
 | 0.961211 | **0.970346** | **20** | 23 |
 
-<div class="flex">
-    <img src="./score.png" />
-    <img src="./score_2.png"/>
-</div>
+<p align="center">
+  <img src="./score.png" width="45%" />
+  <img src="./score_2.png" width="45%" /> 
+</p>
 
 - 有趣的事: 連號 + 同分數，沒被取消資格真的神了
 
 註記: `9832` `9833` `9842` 最終牌名為  17 19 14 ( 太有全家福了
 
-![](./主辦單位要不要管一下.png)
+<img src="./主辦單位要不要管一下.png"  width="50%"/>
 
 
 > **Highlight:** 本次競賽中，雖然 Pseudo-Labeling 策略在 Public Leaderboard 分數略有下降 (0.967 -> 0.961)，但在 Private Leaderboard 中展現了極強的泛化能力，最終突破 **0.9703** (剛開始定的目標)。
