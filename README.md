@@ -57,9 +57,11 @@ names:
 
 ## 🏆 最終成績
 
-| Public Score | Private Score (最終成績) | 名次 | 總上傳次數 |
+| Public Score | Private Score  | 名次 | 總上傳次數 |報告繳交後最終成績|
 | :---: | :---: | :---: | :---: |
-| 0.961211 | **0.970346** | **20** | 23 |
+| 0.961211 | **0.970346** | **20** | 23 |**9**|
+
+
 
 <p align="center">
   <img src="./score_2.png" width="45%" /> 
