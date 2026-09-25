@@ -1,226 +1,218 @@
-# AI CUP 2025 秋季賽：電腦斷層心臟肌肉影像分割競賽 II - 主動脈瓣物件偵測
+# AI CUP 2025 秋季賽：電腦斷層心臟肌肉影像分割競賽 II － 主動脈瓣物件偵測
 
 技術報告書：模型開發與訓練策略
 
 ## 目錄
 
 - [安裝環境](#安裝環境)
-- [🏆 最終成績](#🏆-最終成績)
-- [前言 關於程式碼 (About My Code)](#【前言】-關於程式碼-About-My-Code)
-- [1. 硬體設備與運算環境 (Hardware Environment)](#1-硬體設備與運算環境-hardware-environment)
-- [2. 資料前處理 (Data Preprocessing)](#2-資料前處理-data-preprocessing)
-- [3. 模型選擇與架構 (Model Architecture)](#3-模型選擇與架構-model-architecture)
-- [4. 訓練策略與參數設定 (Training Strategy)](#4-訓練策略與參數設定-training-strategy)
-- [5. 推論與後處理優化 (Inference & Post-processing)](#5-推論與後處理優化-inference--post-processing)
-- [6. 結論與心得 (Conclusion)](#6-結論與心得-conclusion)
-- [7. 贊助 (Donate)](#7-贊助-donate)
+- [最終成績](#最終成績)
+- [前言：關於程式碼](#前言關於程式碼)
+- [1. 硬體設備與運算環境](#1-硬體設備與運算環境-hardware-environment)
+- [2. 資料前處理](#2-資料前處理-data-preprocessing)
+- [3. 模型選擇與架構](#3-模型選擇與架構-model-architecture)
+- [4. 訓練策略與參數設定](#4-訓練策略與參數設定-training-strategy)
+- [5. 推論與後處理優化](#5-推論與後處理優化-inference--post-processing)
+- [6. 結論與心得](#6-結論與心得-conclusion)
 
 
 ## 安裝環境
 
-- 確保已經安裝 python
+- 確認已安裝 Python：[python.org](https://www.python.org/downloads/)
 
-[python.org](https://www.python.org/downloads/)
+- 安裝 PyTorch（請依自身 CUDA 版本至官網取得對應指令）
 
-- 安裝 pytorch
 ```bash
-pip i pytorch
+pip install torch torchvision
 ```
 
-- 安裝 yolo
+- 安裝 Ultralytics YOLO
+
 ```bash
 pip install -U ultralytics
 ```
 
-你需要設定 `Yml` 檔，格式如下
+接著設定資料集的 `yaml` 檔，格式如下：
 
 ```yml
-path: 
-train: 
-val: 
+path:
+train:
+val:
 names:
-  0: 
+  0:
 ```
 
->[!tip]
->全資料訓練如下
+> [!tip]
+> 若採用全資料訓練（驗證集併回訓練集），設定如下：
 
 ```yml
-path: 
+path:
 train: {path_a}
-val: {path_a} #驗證集就指回自己
-test: 
+val: {path_a}   # 驗證集指回訓練集本身
+test:
 
 names:
-  0: 
+  0:
 ```
 
-## 🏆 最終成績
+## 最終成績
 
-| Public Score | Private Score  | 名次 | 總上傳次數 |報告繳交後名次(最終成績)|
-| :---: | :---: | :---: | :---: |:---:|
-| 0.961211 | **0.970346** | **20** | 23 |**9** / 536 |
-
-
+| Public Score | Private Score | Private 名次 | 總上傳次數 | 報告審查後最終名次 |
+| :---: | :---: | :---: | :---: | :---: |
+| 0.961211 | **0.970346** | **20** | 23 | **9** / 536 |
 
 <p align="center">
-  <img src="./score_2.png" width="45%" /> 
+  <img src="./score_2.png" width="45%" />
   <img src="./score.png" width="45%" />
 </p>
 
-- 有趣的事: 連號 + 同分數，沒被取消資格真的神了
-
-註記: `9832` `9833` `9842` 最終牌名為  17 19 14 ( 太有全家福了
-
-<img src="./主辦單位要不要管一下.png"  width="40%"/>
-
-> **Highlight:** 本次競賽中，雖然 Pseudo-Labeling 策略在 Public Leaderboard 分數略有下降 (0.967 -> 0.961)，但在 Private Leaderboard 中展現了極強的泛化能力，最終突破 **0.9703** (剛開始定的目標)。
+> **重點：** 偽標籤（Pseudo-Labeling）策略使 Public Leaderboard 分數由 0.967 略降至 0.961，
+> 但在 Private Leaderboard 上反而提升至 **0.9703**。
+> 這個落差是本次競賽中最值得記錄的一件事：Public 分數的下降並不代表方法變差，
+> 而是原本較高的 Public 分數有一部分來自對 Public 子集的過度適應。
 
 ---
-## 【前言】 關於程式碼 About My Code
 
->[!important]
->## ⚠️Notice
->This repository focuses on the source code and models required to reproduce our **best private score (0.9703)**. Artifacts from early-stage experiments or lower-scoring attempts are not included. <br/>
->本專案專注於重現我們**最佳成績 (0.9703)** 所需的程式碼與模型。早期實驗或分數較低的嘗試檔案未包含於此。
+## 前言：關於程式碼
 
-1. 檔名 `train_v{x}.py` 為訓練模型， `x` 為版本數 。 `predict_v{x}.py` 為預測集， `x` 為版本數
-2. 在程式碼中 `submit_{}.txt` 部分因為作者很懶所以改為 **`{當天日期}-{當天上傳次數}.txt` 與檔名與程式碼不符但是內容相同這裡告知**!!!
-3. 檔名註記 `Yolo_v9_training.py` `fusion_v3.py` 等 **為模型間的融合權重並寫入答案** ， 因為都是共用一個檔案多次重寫(不影響比賽成績)，所以有部分損失在這註記!!
-4. 在 **Public記分板**最高分的預測檔案為 [traiining_v7.py](./src/training_v7.py)，而最終成績最高的為 [training_v9.py](./src/training_v9.py)
+> [!important]
+> **Notice**
+> This repository focuses on the source code and models required to reproduce our **best private score (0.9703)**.
+> Artifacts from early-stage experiments or lower-scoring attempts are not included.
+> 本專案專注於重現最佳成績（0.9703）所需的程式碼與模型；早期實驗或分數較低的嘗試檔案未全數包含於此。
 
->[!note]
-> 👑 代表當時的新高
+1. 檔名 `train_v{x}.py` 為訓練腳本、`predict_v{x}.py` 為預測腳本，`x` 為版本編號。
+2. 程式碼中寫為 `submit_{}.txt` 的輸出檔，實際執行時命名為 `{當天日期}-{當天上傳次數}.txt`。
+   檔名與程式碼中的字串不同，但內容格式一致，特此說明。
+3. `yolo_v9_training.py`、`fusion_v3.py` 等檔案為模型間的加權融合與答案輸出。
+   這一類實驗共用同一個檔案反覆覆寫，因此部分中間版本未保留（不影響最終成績），特此說明。
+4. 在 **Public** 記分板上分數最高的預測檔案為 [training_v7.py](./src/training_v7.py)；
+   最終成績（Private）最高的則為 [training_v9.py](./src/training_v9.py)。
 
-|階段|對應檔案|public 大約分數| 註記|
-|---|---|---|--|
-|用官方檔案| 無| 0.8 | 💩|
-|yolov8L 100次| training_v1.py|0.96 👑||
-|yolov8X | training_v2.py |0.92 |應該是資料量不夠導致過擬和|
-|yolov8 200次|training_v3.py|0.96 👑|
-|yolov8L HD (圖片放大)| training_v3.py |0.95|我也不知道為啥，放大應該要變更精準才對阿?|
-|融合l 跟 x |model_l_x_fusion.py|0.96|融合較低模型拖累另外一個|
-|融合 l 跟 HD|model_l_l_fusion_v2.py|0.96|融合較低模型拖累另外一個|
-|yolov8L 150次|training_v4.py|0.96||
-|k-fold|k-fold_v1.py|0.96|非常不理想|
-|yolov8 高精度|training_v5.py|0.95||
-|切換為 yolov11|RAM 炸了|❌||
-|yolov11 切換快取取為 disk|training_v6_fix.py|0.965 👑||
-|yolov11 高精度|檔案毀損|0.96||
-|融合三巨頭(前三高)|three_model_fusion_v3.py|0.967 👑||
-|yolov11X|檔案毀損|0.95||
-|測試 yolo_v9e|yolo_v9_training.py |0.95|還有包含多個其他的測試檔案，但結果皆不佳|
-|微調訓練集 |training_v7.py|0.967 👑|
-|偽標籤訓練|training_v8.py|0.96|**最高的成績** private 0.97|
-|自我融合(原本預測一次再放在預測一次)|final_dance.py|0.967||
+以下為完整的實驗紀錄，包含未採用與失敗的嘗試。保留這份紀錄的目的，
+是讓每一個分數變化都能對應到一個具體的改動，而不只是呈現最後的結果。
 
+> [!note]
+> 👑 表示該次為當時的新高。
 
+| 階段 | 對應檔案 | Public 約略分數 | 註記 |
+|---|---|---|---|
+| 官方 baseline | 無 | 0.80 | 起始基準 |
+| YOLOv8L，100 epochs | training_v1.py | 0.96 👑 | |
+| YOLOv8X | training_v2.py | 0.92 | 推測為資料量不足導致過擬合（未進一步驗證） |
+| YOLOv8，200 epochs | training_v3.py | 0.96 👑 | |
+| YOLOv8L，放大輸入影像 | training_v3.py | 0.95 | 放大影像未如預期提升精度，原因未釐清 |
+| 融合 L 與 X | model_l_x_fusion.py | 0.96 | 融合後被分數較低的模型拖累 |
+| 融合 L 與放大版 | model_l_l_fusion_v2.py | 0.96 | 同上 |
+| YOLOv8L，150 epochs | training_v4.py | 0.96 | |
+| K-fold 交叉驗證 | k-fold_v1.py | 0.96 | 效果不如預期，後續未採用 |
+| YOLOv8 高精度設定 | training_v5.py | 0.95 | |
+| 改用 YOLO11 | — | ❌ | RAM 不足（OOM），訓練中斷 |
+| YOLO11，快取改為 disk | training_v6_fix.py | 0.965 👑 | |
+| YOLO11 高精度設定 | 檔案毀損 | 0.96 | |
+| 三模型融合（當時分數前三） | three_model_fusion_v3.py | 0.967 👑 | |
+| YOLO11X | 檔案毀損 | 0.95 | |
+| 測試 YOLOv9e | yolo_v9_training.py | 0.95 | 另含多個其他測試檔案，結果皆不佳 |
+| 微調訓練集 | training_v7.py | 0.967 👑 | Public 最高 |
+| 偽標籤訓練 | training_v8.py | 0.96 | **Private 最高（0.9703）**，見上方說明 |
+| 二次推論融合 | final_dance.py | 0.967 | 對第一次預測結果再推論一次後融合 |
+
+---
 
 ## 1. 硬體設備與運算環境 (Hardware Environment)
 
-本次競賽採用 **台灣杉二號 (Taiwania 2)** 之容器運算服務 (TWCC CCS) 進行模型訓練。相較於 Google Colab，TWCC 提供了更穩定且高效能的運算資源，使我們能夠執行大規模的偽標籤訓練任務。
+本次競賽採用 **台灣杉二號 (Taiwania 2)** 的容器運算服務 (TWCC CCS) 進行模型訓練。相較於 Google Colab，TWCC 提供更穩定且高效能的運算資源，使大規模的偽標籤訓練任務得以執行。
 
 | 項目 (Item) | 規格與配置 (Specification) | 說明 (Description) |
 | :--- | :--- | :--- |
 | **運算平台** | TWCC 容器運算服務 (CCS) | 高效能運算環境 |
 | **GPU** | **NVIDIA Tesla V100-SXM2-32GB** | 具備 32GB VRAM，足以支撐 YOLO11x 與 Batch Size 12 的訓練需求 |
 | **CPU** | 8 Cores | 提供足夠的資料預處理與解壓縮能力 |
-| **記憶體 (RAM)** | **180 GB** | 極大的記憶體空間，允許在訓練初期開啟 `cache=True` 加速，後期改用 `cache='disk'` 處理偽標籤大數據 |
+| **記憶體 (RAM)** | **180 GB** | 訓練初期可開啟 `cache=True` 加速，後期改用 `cache='disk'` 處理偽標籤的大量資料 |
 | **作業系統** | Linux (Ubuntu) | 標準深度學習環境 |
-| **軟體環境** | PyTorch 24.08, Ultralytics 8.3 | 使用最新的 YOLO 框架與相容的 PyTorch 版本 |
+| **軟體環境** | PyTorch 24.08、Ultralytics 8.3 | YOLO 框架與相容的 PyTorch 版本 |
 
 ---
 
 ## 2. 資料前處理 (Data Preprocessing)
 
-針對主動脈瓣檢測任務，我們採取了「數據清洗」與「偽標籤擴增」雙重策略，這是突破 0.97 分數的關鍵。
+針對主動脈瓣偵測任務，採取「資料清洗」與「偽標籤擴增」雙重策略，這是分數突破 0.97 的關鍵。
 
 ### A. 全資料訓練 (Full Data Training)
-官方 Baseline 預設將 50 位病患資料切分為 30 位訓練、20 位驗證。為了提升模型的泛化能力，我們將 **驗證集 (Validation Set) 全部合併回訓練集**，使用完整的 **50 位病患資料** 進行訓練，增加模型對不同案例的適應性。
 
-### B. 數據清洗 (Data Cleaning)
-利用初步訓練的高精度模型對官方訓練集進行「反向檢查」，篩選出模型預測與標註差異過大的樣本，並使用 **labelImg** 進行人工校正（修正漏標與邊界框誤差）。修正後的乾淨數據使模型基礎分數提升至 0.9675。
+官方 baseline 預設將 50 位病患資料切分為 30 位訓練、20 位驗證。為提升泛化能力，將 **驗證集全部併回訓練集**，以完整的 **50 位病患資料** 進行訓練。
 
-### C. 偽標籤技術 (Pseudo-Labeling) - **奪冠關鍵**
-面對僅有 50 筆訓練資料但有 16,620 筆測試資料的極端情況，我們採用了半監督學習策略：
-1. 使用最強的「人工修正版模型」對測試集進行推論。
+需要說明的是，這個做法的代價是失去了本地的驗證依據——此後只能依賴 Public Leaderboard 判斷模型好壞，而 Public 與 Private 的落差最終也證明了這個依賴是有風險的。
+
+### B. 資料清洗 (Data Cleaning)
+
+以初步訓練的高精度模型對官方訓練集進行反向檢查，篩選出預測與標註差異過大的樣本，再以 **labelImg** 人工校正（修正漏標與邊界框誤差）。修正後的資料使基礎分數提升至 0.9675。
+
+### C. 偽標籤 (Pseudo-Labeling) — **關鍵策略**
+
+面對僅有 50 位病患的訓練資料、卻有 16,620 筆測試切片的極端不平衡，採用半監督學習：
+
+1. 以人工修正版模型對測試集進行推論。
 2. 篩選信心分數 (Confidence) > **0.85** 的高可信度預測框。
-3. 將這些預測結果作為「偽標籤」，與原始訓練集混合，進行第二階段的自我訓練 (Self-Training)。
-此舉讓訓練資料量暴增數百倍，大幅提升了模型對測試集特徵的覆蓋率。
+3. 將這些預測作為偽標籤，與原始訓練集混合，進行第二階段的自我訓練 (Self-Training)。
+
+此舉使訓練資料量大幅增加，提升了模型對測試集特徵的覆蓋率。
 
 ---
 
 ## 3. 模型選擇與架構 (Model Architecture)
 
-經歷了多次迭代（YOLOv8n -> YOLOv8l -> YOLOv9e），我們最終選定 **YOLO11x** 作為決戰模型。
+經歷多次迭代（YOLOv8n → YOLOv8l → YOLOv9e），最終選定 **YOLO11x** 作為決戰模型。
 
 - **最終模型：** **YOLO11x (Extra Large)**
 - **選擇理由：**
-    1. **SOTA 性能**：YOLO11 是 Ultralytics 最新發布的架構，其 C3k2 與 C2PSA 模組在特徵提取上優於 v8。
-    2. **大模型優勢**：在 V100 32GB 的支援下，使用 Extra Large 版本能捕捉主動脈瓣模糊邊緣的細微特徵。
-    3. **適應性**：在偽標籤的大數據訓練下，大模型較不易過擬合，能有效吸收海量數據的特徵。
+    1. **架構更新**：YOLO11 的 C3k2 與 C2PSA 模組在特徵提取上優於 v8。
+    2. **大模型優勢**：在 V100 32GB 的支援下，Extra Large 版本能捕捉主動脈瓣模糊邊緣的細微特徵。
+    3. **適應性**：在偽標籤的大量資料下，大模型較不易過擬合，能有效吸收資料特徵。
+
+> 事後檢討：當時 YOLOv12 已經釋出，但因剩餘上傳次數有限，最終未敢投入嘗試。
+> 這是本次競賽中比較明確的一個決策失誤。
 
 ---
 
 ## 4. 訓練策略與參數設定 (Training Strategy)
 
-為了在有限的競賽時間內達到最佳收斂效果，我們採用了以下進階訓練策略：
-
 | 參數 (Hyperparameter) | 設定值 (Value) | 策略說明 (Strategy Rationale) |
 | :--- | :--- | :--- |
-| **Epochs** | **120** | 針對偽標籤的大量數據，120 Epochs 能確保模型充分收斂且避免過度擬合 |
-| **Batch Size** | **12** | 針對 YOLO11x 在 V100 上的記憶體極限進行最佳化 |
-| **Optimizer** | **Auto (SGD)** | 配合 `cos_lr=True` (餘弦退火) 使用，確保訓練後期穩定收斂 |
-| **Close Mosaic** | **15** | 在最後 15 個 Epochs 關閉馬賽克增強，讓模型專注於真實影像的特徵學習 |
-| **Cache** | **Disk** | 由於加入偽標籤後資料量暴增，改用硬碟快取避免 RAM OOM (Out of Memory) |
-| **Workers** | **2** | 適度增加 Workers 以加速大數據的讀取效率 |
+| **Epochs** | **120** | 針對偽標籤的大量資料，120 epochs 可確保收斂且避免過度擬合 |
+| **Batch Size** | **12** | 針對 YOLO11x 在 V100 上的記憶體上限進行最佳化 |
+| **Optimizer** | **Auto (SGD)** | 配合 `cos_lr=True`（餘弦退火），確保訓練後期穩定收斂 |
+| **Close Mosaic** | **15** | 最後 15 個 epochs 關閉馬賽克增強，讓模型專注於真實影像的特徵 |
+| **Cache** | **Disk** | 加入偽標籤後資料量大增，改用硬碟快取避免 RAM OOM |
+| **Workers** | **2** | 適度增加 workers 以加速資料讀取 |
 
 ---
 
 ## 5. 推論與後處理優化 (Inference & Post-processing)
 
-在最終提交階段，我們放棄了單純的模型融合 (WBF)，轉而採用極致的單體模型優化策略：
+最終提交階段放棄單純的模型融合 (WBF)，改採單一模型的推論優化策略：
 
-1. **測試時增強 (TTA, Test Time Augmentation)：**
-   開啟 `augment=True`，模型在預測時會自動進行多尺度縮放與翻轉並融合結果，顯著提升了邊緣檢測的穩定性。
-
-2. **串流預測 (Streaming)：**
-   設定 `stream=True`，以生成器模式處理 16,620 張測試影像，避免記憶體溢出。
-
+1. **測試時增強 (TTA)：** 開啟 `augment=True`，預測時自動進行多尺度縮放與翻轉並融合結果，提升邊緣偵測的穩定性。
+2. **串流預測 (Streaming)：** 設定 `stream=True`，以生成器模式處理 16,620 張測試影像，避免記憶體溢出。
 3. **非極大值抑制 (NMS) 微調：**
-   - **Confidence Threshold:** 設定為極低的 **0.001**，確保高 Recall（不漏抓）。
-   - **IoU Threshold:** 調整至 **0.65**，優化重疊框的合併效果。
+   - **Confidence Threshold：** 設為極低的 **0.001**，確保高 Recall（不漏抓）。
+   - **IoU Threshold：** 調整至 **0.65**，優化重疊框的合併效果。
 
 ---
 
 ## 6. 結論與心得 (Conclusion)
 
-本次競賽從 Baseline 的 0.8 一路突破至 0.97+，我們深刻體會到 **「數據品質 > 模型架構」** 的道理。
+本次競賽由 baseline 的 0.80 一路提升至 0.97+，最直接的體會是 **「資料品質的影響大於模型架構」**。
 
-* **關鍵轉折點 1：數據清洗**
-    修正官方標註錯誤後，分數由 0.965 提升至 0.9675，證明了乾淨數據的重要性。
-* **關鍵轉折點 2：偽標籤 (Pseudo-Labeling)**
-    雖然引入偽標籤後，Public Score 因部分雜訊而微幅下降 (0.961)，但在 Private Score 上卻大幅提升至 **0.9703**。這證實了在小樣本 (Few-shot) 的醫療影像競賽中，利用海量無標註測試集進行半監督學習，是提升模型泛化能力最有效的手段。
+* **關鍵轉折一：資料清洗**
+  修正官方標註錯誤後，分數由 0.965 提升至 0.9675，說明乾淨資料的重要性。
 
-最終，我們依靠 **YOLO11x + 人工清洗數據 + 偽標籤自我訓練** 的組合拳，成功達成了競賽目標。
+* **關鍵轉折二：偽標籤**
+  引入偽標籤後 Public Score 微幅下降至 0.961，Private Score 卻提升至 **0.9703**。
+  在小樣本的醫療影像任務中，利用大量無標註測試資料進行半監督學習，是提升泛化能力最有效的手段之一。
 
-然後我最想說的是
+* **最重要的一課：Public 分數不等於方法的好壞**
+  把驗證集併回訓練集之後，Public Leaderboard 成為唯一的判斷依據，而它衡量的只是測試集的一個子集。
+  偽標籤讓 Public 下降、Private 上升，正好說明先前較高的 Public 分數有一部分來自對該子集的過度適應。
+  在沒有可靠保留資料的情況下，任何「分數變高了」的結論都應該保留懷疑。
 
-![](https://p3-pc-sign.douyinpic.com/tos-cn-i-0813c000-ce/oIwAaiGxoEANbD51ABENALOGiAeEeIf93AiJYk~tplv-dy-aweme-images:q75.webp?biz_tag=aweme_images&from=327834062&lk3s=138a59ce&s=PackSourceEnum_SEARCH&sc=image&se=false&x-expires=1767420000&x-signature=M9dxF5VxSlPQ69%2Blvn3yw%2Bf2eRk%3D)
-
-<p align="center">
-  <img src="./meme.png" width="30%"/>
-  <img src="https://avatars.fastly.steamstatic.com/a8a9681b2e03ad44875231cf3e682cda3e50630a_full.jpg" width="30%" />
-</p>
-
----
-
-## 7. 贊助作者買 iPad (Donate)
-
-我很需要一台平板謝謝
-
-<p align="center">
-  <a href="https://ko-fi.com/arch1e0732">
-    <img src="https://ko-fi.com/img/githubbutton_sm.svg" alt="Support me on ko-fi!" />
-  </a>
-</p>
+最終方案為 **YOLO11x + 人工清洗資料 + 偽標籤自我訓練**。
